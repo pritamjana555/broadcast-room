@@ -11,11 +11,12 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useSession } from "next-auth/react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import LoginButton from "./Loginbutton"
 import LogoutButton from "./logoutbutton"
 import SignupButton from "./Signupbutton"
 import RoomForm from "./roomForm"
+import axios from "axios"
 
 type Room = {
   id: number
@@ -23,10 +24,30 @@ type Room = {
 }
 
 export function AppSidebar() {
-  const { status } = useSession()
+  const { data: session, status } = useSession()
   const [isRoomFormOpen, setIsRoomFormOpen] = useState(false)
   const [rooms, setRooms] = useState<Room[]>([])
 
+  useEffect(() => {
+    if (status !== "authenticated" || !session.user?.id) {
+      setRooms([])
+      return
+    }
+    const userId = session.user.id
+
+    async function getRooms() {
+      try {
+        const res = await axios.get<{ allrooms: Room[] }>(
+          `http://localhost:5000/users/${userId}/rooms`
+        )
+        setRooms(res.data.allrooms ?? [])
+      } catch (error) {
+        console.error("Failed to fetch rooms", error)
+      }
+    }
+
+    getRooms()
+  })
   return (
     <Sidebar>
       <SidebarHeader>

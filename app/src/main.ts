@@ -8,12 +8,12 @@ import cors from 'cors'
 const app = express()
 
 const databaseUrl = process.env.DATABASE_URL
-        ?.trim()
-        .replace(/^["']/, "")
-        .replace(/["',]+$/, "")
+    ?.trim()
+    .replace(/^["']/, "")
+    .replace(/["',]+$/, "")
 
 if (!databaseUrl || !/^postgres(?:ql)?:\/\//.test(databaseUrl)) {
-        throw new Error("DATABASE_URL must start with postgresql:// or postgres://")
+    throw new Error("DATABASE_URL must start with postgresql:// or postgres://")
 }
 
 app.use(cors({
@@ -80,72 +80,72 @@ app.post("/api/auth/signup", async (req, res) => {
 })
 
 app.post("/api/auth/signin", async (req, res) => {
-  try {
-    const { identifier, password } = req.body;
+    try {
+        const { identifier, password } = req.body;
 
-    if (!identifier || !password) {
-      return res.status(400).json({
-        message: "Username/email and password are required",
-      });
+        if (!identifier || !password) {
+            return res.status(400).json({
+                message: "Username/email and password are required",
+            });
+        }
+
+        const user = await client.user.findFirst({
+            where: {
+                OR: [
+                    { email: identifier },
+                    { username: identifier },
+                ],
+            },
+        });
+
+        if (!user) {
+            return res.status(401).json({
+                message: "Invalid username or password",
+            });
+        }
+
+        const correctPassword = await bcrypt.compare(
+            password,
+            user.password
+        );
+
+        if (!correctPassword) {
+            return res.status(401).json({
+                message: "Invalid username or password",
+            });
+        }
+
+        return res.status(200).json({
+            user: {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+            },
+        });
+    } catch (error) {
+        console.error("Signin failed:", error);
+
+        if (
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === "P1001"
+        ) {
+            return res.status(503).json({
+                message: "Database is temporarily unavailable",
+            });
+        }
+
+        return res.status(500).json({
+            message: "Something went wrong",
+        });
     }
-
-    const user = await client.user.findFirst({
-      where: {
-        OR: [
-          { email: identifier },
-          { username: identifier },
-        ],
-      },
-    });
-
-    if (!user) {
-      return res.status(401).json({
-        message: "Invalid username or password",
-      });
-    }
-
-    const correctPassword = await bcrypt.compare(
-      password,
-      user.password
-    );
-
-    if (!correctPassword) {
-      return res.status(401).json({
-        message: "Invalid username or password",
-      });
-    }
-
-    return res.status(200).json({
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-      },
-    });
-  } catch (error) {
-    console.error("Signin failed:", error);
-
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P1001"
-    ) {
-      return res.status(503).json({
-        message: "Database is temporarily unavailable",
-      });
-    }
-
-    return res.status(500).json({
-      message: "Something went wrong",
-    });
-  }
 });
 
-app.post("/room", async (req, res) => {
+app.post("/createroom", async (req, res) => {
     const slug = req.body.slug
     const adminId = req.body.adminId
-    
-    if(!slug || !adminId){
-      return res.status(400).json({
+
+    if (!slug || !adminId) {
+        return res.status(400).json({
             message: "Incorrect inputs"
         })
     }
@@ -167,7 +167,41 @@ app.post("/room", async (req, res) => {
         })
 
     }
-    
+
+})
+
+app.get("/users/:userId/rooms", async (req, res) => {
+    const { userId } = req.params
+
+    if (!userId) {
+        return res.status(400).json({
+            message: "User ID is required"
+        })
+    }
+
+    try {
+        const allrooms = await client.room.findMany({
+            where: {
+                adminId: userId,
+            },
+            select: {
+                id: true,
+                slug: true,
+            },
+            orderBy: {
+                createdAt: "desc"
+            }
+        })
+
+        res.json({
+            allrooms
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to fetch rooms"
+        });
+    }
 })
 
 // app.post("/room/:chat", )

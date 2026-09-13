@@ -2,6 +2,7 @@
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type RoomFormProps = {
     onClose: () => void;
@@ -12,32 +13,28 @@ export default function RoomForm({ onClose, onCreated }: RoomFormProps) {
     const [slug, setSlug] = useState("")
     const [loading, setLoading] = useState(false);
     const { data: session, status } = useSession()
+    const router = useRouter()
+    
     if (status === "loading") {
         return <div>Loading...</div>;
     }
-    if (status === "authenticated") {
+    if (status === "authenticated" && session?.user?.id) {
+        const userId = session.user.id
+
         async function createRoom() {
             try {
                 setLoading(true);
-                console.log(session);
-                
-                const adminId = session?.user?.id
-                console.log(adminId);
-                
-                const res = await axios.post("http://localhost:5000/room", {
+
+                const res = await axios.post<{ roomId: number }>("http://localhost:5000/createroom", {
                     slug,
-                    adminId
+                    adminId: userId
                 })
-                console.log("Room created: ", res.data);
                 onCreated({ id: res.data.roomId, slug })
                 setSlug("")
+                router.push(`http://localhost:3000/room/${slug}`)
                 onClose()
             } catch (error) {
-                if (axios.isAxiosError(error)) {
-                    console.log(error.response?.data);
-                } else {
-                    console.log(error);
-                }
+                console.error("Failed to create room", error)
             } finally {
                 setLoading(false)
             }
