@@ -29,7 +29,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError("Invalid email/name or password");
     } else if (result?.ok) {
-      router.push("/");
+      router.push("/room");
     }
   }
 
@@ -53,7 +53,7 @@ export default function LoginPage() {
 
       <button type="submit">Login</button>
 
-      <h6>Dont't have an account? <Link href={'/signup'} className="text-blue-400 underline italic">Sign up</Link></h6>
+      <h6>Don&apos;t have an account? <Link href={'/signup'} className="text-blue-400 underline italic">Sign up</Link></h6>
 
       {error && <p>{error}</p>}
     </form>
