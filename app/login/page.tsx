@@ -1,5 +1,10 @@
+'use client'
+import { signIn, signOut, useSession } from "next-auth/react";
 import { AuthShell } from "../components/auth/auth-shell";
 import { LoginForm } from "../components/auth/login-form";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useState } from "react"
 
 export default function LoginPage() {
   const { data: session } = useSession();
@@ -49,7 +54,7 @@ export default function LoginPage() {
 
       <button type="submit">Login</button>
 
-      <h6>Dont't have an account? <Link href={'/signup'} className="text-blue-400 underline italic">Sign up</Link></h6>
+      <h6>Don't have an account? <Link href={'/signup'} className="text-blue-400 underline italic">Sign up</Link></h6>
 
       {error && <p>{error}</p>}
     </form>
