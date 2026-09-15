@@ -1,11 +1,38 @@
-import Navbar from "./components/navbar";
-
+import { Categories } from "./components/home/categories";
+import { ConversationMarquee } from "./components/home/conversation-marquee";
+import { CreateRoomCTA } from "./components/home/create-room-cta";
+import { HomeFooter } from "./components/home/footer";
+import { Hero } from "./components/home/hero";
+import { HowItWorks } from "./components/home/how-it-works";
+import { LiveRooms } from "./components/home/live-rooms";
+import { HomeNavbar } from "./components/home/navbar";
 
 export default function Home() {
   return (
-    <>
-    <div>hi there</div>
-    <Navbar/>
-    </>
+    <main className="home-page">
+      {/* ================= NAVBAR ================= */}
+      <HomeNavbar />
+
+      {/* ================= HERO ================= */}
+      <Hero />
+
+      {/* ==========================================
+          EVERYTHING BELOW HERO
+          USES ONE CONTINUOUS BACKGROUND
+          ========================================== */}
+      <div className="post-hero">
+        <ConversationMarquee />
+
+        <LiveRooms />
+
+        <Categories />
+
+        <HowItWorks />
+
+        <CreateRoomCTA />
+
+        <HomeFooter />
+      </div>
+    </main>
   );
 }
