@@ -32,7 +32,7 @@ export function LoginForm() {
           <button
             type="button"
             className="auth-submit"
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/room")}
           >
             Continue to chatroom
             <ArrowRight size={17} />
@@ -66,7 +66,7 @@ export function LoginForm() {
       if (result?.error) {
         setError("Invalid email/name or password");
       } else if (result?.ok) {
-        router.push("/");
+        router.push("/room");
       }
     } catch {
       setError("Something went wrong. Please try again.");

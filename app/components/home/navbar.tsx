@@ -1,7 +1,7 @@
 'use client'
 import Link from "next/link";
 import { ArrowRight, MessageCircle } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 
 export function HomeNavbar() {
@@ -47,7 +47,13 @@ export function HomeNavbar() {
             className="login-link"
           >
             Log in
-          </Link> : null}
+          </Link> :<button
+                      type="button"
+                      className="auth-secondary-button"
+                      onClick={() => signOut()}
+                    >
+                      Log out
+                    </button>}
 
           {session.status !== 'authenticated' ?
             <Link
