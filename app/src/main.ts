@@ -141,8 +141,10 @@ app.post("/api/auth/signin", async (req, res) => {
 });
 
 app.post("/createroom", async (req, res) => {
-    const slug = req.body.slug
-    const adminId = req.body.adminId
+    const body = req.body ?? {}
+    const slug = typeof body.slug === "string" ? body.slug.trim() : ""
+    const adminId = typeof body.adminId === "string" ? body.adminId.trim() : ""
+    const shareCode = Math.random().toString(36).substring(2, 10)
 
     if (!slug || !adminId) {
         return res.status(400).json({
@@ -154,18 +156,26 @@ app.post("/createroom", async (req, res) => {
         const room = await client.room.create({
             data: {
                 slug: slug,
-                adminId: adminId
+                adminId: adminId,
+                shareCode: shareCode
             }
         })
 
-        res.json({
-            roomId: room.id
+        return res.status(201).json({
+            roomId: room.id,
+            shareCode: shareCode
         })
     } catch (error) {
-        res.status(411).json({
-            message: "Room already exists with this name", error
-        })
+        console.error("Create room failed:", error)
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+            return res.status(409).json({
+                message: "Room already exists with this name"
+            })
+        }
 
+        return res.status(500).json({
+            message: "Could not create room"
+        })
     }
 
 })
@@ -198,6 +208,7 @@ app.get("/users/:userId/rooms", async (req, res) => {
         });
 
     } catch (error) {
+        console.error("Failed to fetch rooms:", error)
         res.status(500).json({
             message: "Failed to fetch rooms"
         });

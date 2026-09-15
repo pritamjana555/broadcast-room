@@ -13,12 +13,13 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
-  email    String @unique
-  username String @unique
-  password String
-  rooms    Room[]
-  chats    Chat[]
+  id         String @id @default(uuid())
+  email      String @unique
+  username   String @unique
+  password   String
+  rooms      Room[] @relation("AdminRooms")
+  otherRooms Room[] @relation("RoomMembers")
+  chats      Chat[]
 }
 
 model Room {
@@ -26,7 +27,9 @@ model Room {
   slug      String   @unique
   createdAt DateTime @default(now())
   adminId   String
-  admin     User     @relation(fields: [adminId], references: [id])
+  shareCode String
+  admin     User     @relation("AdminRooms", fields: [adminId], references: [id])
+  members   User[]   @relation("RoomMembers")
   chats     Chat[]
 }
 

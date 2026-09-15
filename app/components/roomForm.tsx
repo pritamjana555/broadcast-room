@@ -5,11 +5,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 type RoomFormProps = {
-    onClose: () => void;
-    onCreated: (room: { id: number; slug: string }) => void;
+    onCloseAction: () => void;
+    onCreatedAction: (room: { id: number; slug: string }) => void;
 };
 
-export default function RoomForm({ onClose, onCreated }: RoomFormProps) {
+export default function RoomForm({ onCloseAction, onCreatedAction }: RoomFormProps) {
     const [slug, setSlug] = useState("")
     const [loading, setLoading] = useState(false);
     const { data: session, status } = useSession()
@@ -22,19 +22,26 @@ export default function RoomForm({ onClose, onCreated }: RoomFormProps) {
         const userId = session.user.id
 
         async function createRoom() {
+            const roomSlug = slug.trim()
+            if (!roomSlug) return
+
             try {
                 setLoading(true);
 
                 const res = await axios.post<{ roomId: number }>("http://localhost:5000/createroom", {
-                    slug,
-                    adminId: userId
+                    slug: roomSlug,
+                    adminId: userId,
                 })
-                onCreated({ id: res.data.roomId, slug })
+                onCreatedAction({ id: res.data.roomId, slug: roomSlug })
                 setSlug("")
-                router.push(`http://localhost:3000/room/${slug}`)
-                onClose()
+                onCloseAction()
+                router.push(`/room/${encodeURIComponent(roomSlug)}`)
             } catch (error) {
-                console.error("Failed to create room", error)
+                if (axios.isAxiosError(error)) {
+                    console.error("Failed to create room", error.response?.data?.message ?? error.message)
+                } else {
+                    console.error("Failed to create room", error)
+                }
             } finally {
                 setLoading(false)
             }

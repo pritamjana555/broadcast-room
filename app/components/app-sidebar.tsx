@@ -29,8 +29,7 @@ export function AppSidebar() {
   const [rooms, setRooms] = useState<Room[]>([])
 
   useEffect(() => {
-    if (status !== "authenticated" || !session.user?.id) {
-      setRooms([])
+    if (status !== "authenticated" || !session?.user?.id) {
       return
     }
     const userId = session.user.id
@@ -47,7 +46,7 @@ export function AppSidebar() {
     }
 
     getRooms()
-  })
+  }, [session?.user?.id, status])
   return (
     <Sidebar>
       <SidebarHeader>
@@ -130,8 +129,8 @@ export function AppSidebar() {
               </button>
             </div>
             <RoomForm
-              onClose={() => setIsRoomFormOpen(false)}
-              onCreated={(room) => setRooms((currentRooms) => [...currentRooms, room])}
+              onCloseAction={() => setIsRoomFormOpen(false)}
+              onCreatedAction={(room) => setRooms((currentRooms) => [...currentRooms, room])}
             />
           </div>
         </div>
