@@ -2,41 +2,45 @@
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type RoomFormProps = {
-    onClose: () => void;
-    onCreated: (room: { id: number; slug: string }) => void;
+    onCloseAction: () => void;
+    onCreatedAction: (room: { id: number; slug: string }) => void;
 };
 
-export default function RoomForm({ onClose, onCreated }: RoomFormProps) {
+export default function RoomForm({ onCloseAction, onCreatedAction }: RoomFormProps) {
     const [slug, setSlug] = useState("")
     const [loading, setLoading] = useState(false);
     const { data: session, status } = useSession()
+    const router = useRouter()
+    
     if (status === "loading") {
         return <div>Loading...</div>;
     }
-    if (status === "authenticated") {
+    if (status === "authenticated" && session?.user?.id) {
+        const userId = session.user.id
+
         async function createRoom() {
+            const roomSlug = slug.trim()
+            if (!roomSlug) return
+
             try {
                 setLoading(true);
-                console.log(session);
-                
-                const adminId = session?.user?.id
-                console.log(adminId);
-                
-                const res = await axios.post("http://localhost:5000/room", {
-                    slug,
-                    adminId
+
+                const res = await axios.post<{ roomId: number }>("http://localhost:5000/createroom", {
+                    slug: roomSlug,
+                    adminId: userId,
                 })
-                console.log("Room created: ", res.data);
-                onCreated({ id: res.data.roomId, slug })
+                onCreatedAction({ id: res.data.roomId, slug: roomSlug })
                 setSlug("")
-                onClose()
+                onCloseAction()
+                router.push(`/room/${encodeURIComponent(roomSlug)}`)
             } catch (error) {
                 if (axios.isAxiosError(error)) {
-                    console.log(error.response?.data);
+                    console.error("Failed to create room", error.response?.data?.message ?? error.message)
                 } else {
-                    console.log(error);
+                    console.error("Failed to create room", error)
                 }
             } finally {
                 setLoading(false)
