@@ -1,7 +1,11 @@
+'use client'
 import Link from "next/link";
 import { ArrowRight, MessageCircle } from "lucide-react";
+import { useSession } from "next-auth/react";
+
 
 export function HomeNavbar() {
+  const session = useSession()
   return (
     <header className="home-navbar">
       <div className="home-nav-inner">
@@ -38,20 +42,25 @@ export function HomeNavbar() {
         </nav>
 
         <div className="nav-actions">
-          <Link
+          {session.status !== 'authenticated' ? <Link
             href="/api/auth/signin"
             className="login-link"
           >
             Log in
-          </Link>
+          </Link> : null}
 
-          <Link
-            href="/signup"
-            className="get-started"
-          >
-            Get started
-            <ArrowRight size={15} />
-          </Link>
+          {session.status !== 'authenticated' ?
+            <Link
+              href="/signup"
+              className="get-started"
+            >
+              Get started
+              <ArrowRight size={15} />
+            </Link>
+            :
+            <div>{session.data.user.name}</div>
+          }
+
         </div>
       </div>
     </header>

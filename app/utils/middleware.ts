@@ -5,6 +5,7 @@ export const config = {
     "/dashboard/:path*",
     "/profile/:path*",
     "/settings/:path*",
-    "/room/:path*"
+    // "/rooms/:path*",
+    
   ],
 };

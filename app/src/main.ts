@@ -34,12 +34,12 @@ const client = new PrismaClient({
 app.post("/api/auth/signup", async (req, res) => {
     const body = req.body ?? {}
     const email = typeof body.email === "string" ? body.email.trim() : ""
-    const username = typeof body.username === "string" ? body.username.trim() : ""
+    const name = typeof body.name === "string" ? body.name.trim() : ""
     const password = typeof body.password === "string" ? body.password : ""
 
-    if (!email || !username || !password) {
+    if (!email || !name || !password) {
         return res.status(400).json({
-            message: "Email, username, and password are required"
+            message: "Email, name, and password are required"
         })
     }
     try {
@@ -48,13 +48,13 @@ app.post("/api/auth/signup", async (req, res) => {
         await client.user.create({
             data: {
                 email,
-                username,
+                name,
                 password: hashedPassword,
             },
             select: {
                 id: true,
                 email: true,
-                username: true
+                name: true
             }
         })
 
@@ -65,7 +65,7 @@ app.post("/api/auth/signup", async (req, res) => {
         console.error("Signup failed:", e)
         if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
             return res.status(409).json({
-                message: "Email or username already exists"
+                message: "Email or name already exists"
             })
         }
         if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P1001") {
@@ -85,7 +85,7 @@ app.post("/api/auth/signin", async (req, res) => {
 
         if (!identifier || !password) {
             return res.status(400).json({
-                message: "Username/email and password are required",
+                message: "name/email and password are required",
             });
         }
 
@@ -93,14 +93,14 @@ app.post("/api/auth/signin", async (req, res) => {
             where: {
                 OR: [
                     { email: identifier },
-                    { username: identifier },
+                    { name: identifier },
                 ],
             },
         });
 
         if (!user) {
             return res.status(401).json({
-                message: "Invalid username or password",
+                message: "Invalid name or password",
             });
         }
 
@@ -111,7 +111,7 @@ app.post("/api/auth/signin", async (req, res) => {
 
         if (!correctPassword) {
             return res.status(401).json({
-                message: "Invalid username or password",
+                message: "Invalid name or password",
             });
         }
 
@@ -119,7 +119,7 @@ app.post("/api/auth/signin", async (req, res) => {
             user: {
                 id: user.id,
                 email: user.email,
-                username: user.username,
+                name: user.name,
             },
         });
     } catch (error) {
@@ -180,6 +180,55 @@ app.post("/createroom", async (req, res) => {
 
 })
 
+app.post("/joinroom", async (req, res) => {
+    const shareCode = req.body.shareCode
+    const userId = req.body.userId
+
+    if (!shareCode || !userId) {
+        return res.status(400).json({
+            message: "shareCode and userId are required",
+        })
+    }
+    try {
+        
+    
+    const room = await client.room.findFirst({
+        where: {
+            shareCode
+        }
+    })
+    if(!room) return res.status(401).json({
+        message: "Room not found."
+    })
+
+    const updatedRoom = await client.room.update({
+        where: {id: room.id},
+        data: {
+            members: {
+                connect: { id: userId}
+            }
+        },
+        select: {
+            id: true,
+            slug: true,
+            shareCode: true,
+        }
+    })
+
+    return res.status(200).json({
+        message: "Joined room successfully",
+        room: updatedRoom,
+    })
+
+    } catch (error) {
+        console.error("Join room failed:", error)
+
+        return res.status(500).json({
+            message: "Could not join room",
+        })
+    }
+})
+
 app.get("/users/:userId/rooms", async (req, res) => {
     const { userId } = req.params
 
@@ -215,7 +264,44 @@ app.get("/users/:userId/rooms", async (req, res) => {
     }
 })
 
-// app.post("/room/:chat", )
+app.get("/chats/:roomId", async (req, res) => {
+    try {
+        const roomId = Number(req.params.roomId);
+        console.log(req.params.roomId);
+        const messages = await client.chat.findMany({
+            where: {
+                roomId: roomId
+            },
+            orderBy: {
+                id: "desc"
+            },
+            take: 1000
+        });
+
+        res.json({
+            messages
+        })
+    } catch(e) {
+        console.log(e);
+        res.json({
+            messages: []
+        })
+    }
+    
+})
+
+app.get("/room/:slug", async (req, res) => {
+    const slug = req.params.slug;
+    const room = await client.room.findFirst({
+        where: {
+            slug
+        }
+    });
+
+    res.json({
+        room
+    })
+})
 
 const server = app.listen(5000, () => {
     console.log("Server is running in 5000");

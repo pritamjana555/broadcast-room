@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const { data: session } = useSession();
@@ -26,7 +27,7 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError("Invalid email/username or password");
+      setError("Invalid email/name or password");
     } else if (result?.ok) {
       router.push("/");
     }
@@ -36,7 +37,7 @@ export default function LoginPage() {
     <form onSubmit={handleLogin}>
       <input
         type="text"
-        placeholder="Email or username"
+        placeholder="Email or name"
         value={identifier}
         onChange={(event) => setIdentifier(event.target.value)}
         required
@@ -51,6 +52,8 @@ export default function LoginPage() {
       />
 
       <button type="submit">Login</button>
+
+      <h6>Dont't have an account? <Link href={'/signup'} className="text-blue-400 underline italic">Sign up</Link></h6>
 
       {error && <p>{error}</p>}
     </form>

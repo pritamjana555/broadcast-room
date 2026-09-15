@@ -8,8 +8,12 @@ import {
 } from "lucide-react";
 
 import { HeroScene } from "./hero-scene";
+import axios from "axios";
 
 export function Hero() {
+  async function joinRoom(){
+    await axios.post("")
+  }
   return (
     <section className="hero-section">
       <div className="hero-background" />
@@ -57,8 +61,9 @@ export function Hero() {
           <Link
             href="#rooms"
             className="primary-action"
+            onClick={() => joinRoom()}
           >
-            Explore rooms
+            Join room by code
 
             <ArrowRight size={17} />
           </Link>

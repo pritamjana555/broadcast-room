@@ -87,7 +87,7 @@ Use a driver adapter for the standard SQL workflow.
 ## Common Issues
 
 ### "Login failed for user"
-- SQL Server auth vs Windows auth. Prisma typically uses SQL Server authentication (username/password).
+- SQL Server auth vs Windows auth. Prisma typically uses SQL Server authentication (name/password).
 - Ensure TCP/IP is enabled in SQL Server Configuration Manager.
 
 ### "Table not found" (dbo schema)

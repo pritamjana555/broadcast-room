@@ -1,12 +1,13 @@
 'use client'
 import axios from "axios";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 export default function SignupPage(){
       const router = useRouter();
       const [email, setEmail] = useState("");
-      const [username, setUsername] = useState("");
+      const [name, setname] = useState("");
       const [password, setPassword] = useState("");
       const [error, setError] = useState("");
 
@@ -17,11 +18,11 @@ export default function SignupPage(){
         try{
             const res = await axios.post("http://localhost:5000/api/auth/signup", {
                 email,
-                username,
+                name,
                 password
             })
             if(res.status){
-            router.push("/api/auth/login")
+            router.push("/api/auth/signin")
             } else{
                 console.log('signup error');
                 
@@ -40,9 +41,9 @@ export default function SignupPage(){
       />
       <input
         type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(event) => setUsername(event.target.value)}
+        placeholder="name"
+        value={name}
+        onChange={(event) => setname(event.target.value)}
         required
       />
 
@@ -55,7 +56,7 @@ export default function SignupPage(){
       />
 
       <button type="submit">Signup</button>
-
+<h6>Already have an account? <Link href={'/api/auth/signin'} className="text-blue-400 underline italic">Login</Link></h6>
       {error && <p>{error}</p>}
     </form>
 }

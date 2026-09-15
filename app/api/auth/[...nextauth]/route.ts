@@ -7,9 +7,9 @@ export const authOptions = {
             name: "Email",
             credentials: {
                 identifier: {
-                    label: "Email or Username",
+                    label: "Email or name",
                     type: "text",
-                    placeholder: "email or username",
+                    placeholder: "email or name",
                 },
                 password: {
                     label: "Password",
@@ -40,10 +40,15 @@ export const authOptions = {
         }),
     ],
 
+    pages: {
+        signIn: "/login"
+    },
+
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
                 token.userId = user.id;
+                token.name = user.name;
             }
 
             return token;
@@ -52,6 +57,8 @@ export const authOptions = {
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.userId as string;
+                
+                session.user.name = token.name as string;
             }
 
             return session;
