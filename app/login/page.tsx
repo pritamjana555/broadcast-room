@@ -7,33 +7,6 @@ import Link from "next/link";
 import { useState } from "react"
 
 export default function LoginPage() {
-  const { data: session } = useSession();
-  const router = useRouter();
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  if (session) {
-    return <button onClick={() => signOut()}>Logout</button>;
-  }
-
-  async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-
-    const result = await signIn("credentials", {
-      identifier,
-      password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      setError("Invalid email/name or password");
-    } else if (result?.ok) {
-      router.push("/");
-    }
-  }
-
   return (
     <form onSubmit={handleLogin}>
       <input
@@ -54,7 +27,7 @@ export default function LoginPage() {
 
       <button type="submit">Login</button>
 
-      <h6>Don't have an account? <Link href={'/signup'} className="text-blue-400 underline italic">Sign up</Link></h6>
+      <h6>Dont't have an account? <Link href={'/signup'} className="text-blue-400 underline italic">Sign up</Link></h6>
 
       {error && <p>{error}</p>}
     </form>
