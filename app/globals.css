@@ -2705,10 +2705,13 @@ html {
 html,
 body {
   min-height: 100%;
+  overflow-y: auto;
 }
 
 body {
   background: #f7f5fb;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* The homepage owns the overall canvas. */
@@ -2716,6 +2719,7 @@ body {
   position: relative;
   min-height: 100vh;
   overflow-x: clip;
+  overflow-y: visible;
   background: #f7f5fb;
 }
 
@@ -2733,7 +2737,7 @@ body {
 .post-hero {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  overflow: visible;
 
   background:
     radial-gradient(

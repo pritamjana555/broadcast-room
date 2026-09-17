@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import WebSocket, { WebSocketServer } from "ws";
-import { getToken,decode } from "next-auth/jwt";
+import { decode } from "next-auth/jwt";
 import type { IncomingMessage } from "node:http";
 import type { Socket } from "node:net";
 import "dotenv/config"
@@ -82,7 +82,6 @@ if (!token) {
   socket.destroy();
   return;
 }
-console.log("token:",token);
 
   if (!token) {
     console.error("WebSocket authentication rejected: no NextAuth session cookie")

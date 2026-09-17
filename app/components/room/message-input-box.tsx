@@ -52,7 +52,7 @@ export default function MessageInput({
                     setMessage(event.target.value)
                   }
                   onKeyDown={handleKeyDown}
-                  placeholder={`Message #${roomSlug}`}
+                  placeholder={`Message #${roomSlug.replaceAll("%20","")}`}
                   className="min-w-0 flex-1 bg-transparent px-2 text-sm text-white outline-none placeholder:text-slate-500"
                 />
 

@@ -311,7 +311,8 @@ app.get("/chats/:slug", async (req, res) => {
 })
 
 app.get("/room/:slug", async (req, res) => {
-    const slug = req.params.slug;
+    res.set("Cache-Control", "no-store");
+    const slug = decodeURIComponent(req.params.slug);
     const room = await client.room.findFirst({
         where: {
             slug

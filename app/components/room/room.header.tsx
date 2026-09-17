@@ -1,6 +1,8 @@
 import { Bell, MessageCircle, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function RoomHeader(){
+  const router = useRouter()
     return <header className="flex h-[72px] shrink-0 items-center border-b border-white/[0.06] bg-[#111720] px-4 sm:px-6">
 
           {/* Logo */}
@@ -13,7 +15,7 @@ export default function RoomHeader(){
               />
             </div>
 
-            <span className="hidden text-[21px] font-semibold tracking-tight sm:block">
+            <span className="hidden text-[21px] font-semibold tracking-tight sm:block cursor-pointer" onClick={() => router.push('/')}>
               chatroom
             </span>
           </div>

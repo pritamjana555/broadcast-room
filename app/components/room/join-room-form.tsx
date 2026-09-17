@@ -5,7 +5,14 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { FormEvent, useState } from "react";
 
-export default function JoinRoomForm() {
+type JoinRoomFormProps = {
+  onJoinedAction: () => void;
+};
+
+
+export default function JoinRoomForm({
+  onJoinedAction,
+}: JoinRoomFormProps) {
   const [shareCode, setShareCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -47,6 +54,7 @@ export default function JoinRoomForm() {
       const joinedRoom = response.data.room;
 
       setShareCode("");
+      onJoinedAction()
       router.push(`/room/${encodeURIComponent(joinedRoom.slug)}`);
     } catch (requestError) {
       if (axios.isAxiosError(requestError)) {

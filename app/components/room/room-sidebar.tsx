@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import RoomForm from "../home/roomForm";
 import JoinRoomForm from "./join-room-form";
+import { usePathname } from "next/navigation";
 
 
 type Room = {
@@ -22,6 +23,7 @@ export default function RoomSidebar() {
     const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
     const [isJoinRoomOpen, setIsJoinRoomOpen] = useState(false);
     const router = useRouter()
+    const pathname = usePathname()
 
     useEffect(() => {
         if (status !== "authenticated" || !session?.user?.id) {
@@ -41,7 +43,7 @@ export default function RoomSidebar() {
         }
 
         getRooms()
-    }, [session?.user?.id, status])
+    }, [session?.user?.id, status, pathname])
 
     return <aside
         className={`hidden shrink-0 border-r border-white/[0.06] bg-[#10161f] transition-all duration-200 lg:flex lg:flex-col ${sidebarCollapsed ? "w-[72px]" : "w-[250px]"
@@ -68,7 +70,7 @@ export default function RoomSidebar() {
                 {!sidebarCollapsed && (
                     <button
                         type="button"
-                        title="Create room"
+                        title="Join room"
                         className="flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-white transition hover:bg-violet-500" onClick={() => setIsJoinRoomOpen(true)}
                     >
                         <Plus size={17} />
@@ -171,6 +173,7 @@ export default function RoomSidebar() {
 
                 <button
                     type="button"
+                    title="Create Room"
                     className="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm text-slate-400 transition hover:bg-white/[0.04] hover:text-white" onClick={() => setIsCreateRoomOpen(true)}
                 >
                     <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white/[0.05]">
@@ -241,7 +244,7 @@ export default function RoomSidebar() {
                         </button>
                     </div>
 
-                    <JoinRoomForm/>
+                    <JoinRoomForm onJoinedAction={() => setIsJoinRoomOpen(false)}/>
                 </div>
             </div>
         )}

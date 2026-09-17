@@ -1,4 +1,5 @@
 "use client"
+import Chat3dot from "@/app/components/room/chat3dot"
 import MessageInput from "@/app/components/room/message-input-box"
 import axios from "axios"
 import { Hash, Info, MoreHorizontal, Users } from "lucide-react"
@@ -29,10 +30,10 @@ export default function Page() {
     const [roomId, setRoomId] = useState<number | null>(null)
     const [messages, setMessages] = useState<Message[]>([])
     const [membersOpen, setMembersOpen] = useState(false);
+    const [color, setColor] = useState("rgba(255, 0, 0, 1)");
     const socketRef = useRef<WebSocket | null>(null)
     const queuedMessagesRef = useRef<Array<{ clientId: string; message: string }>>([])
 
-    const currentRoom = rooms.find((room) => room.slug === slug)
 
     useEffect(() => {
         if (!slug) return
@@ -50,7 +51,7 @@ export default function Page() {
         }
 
         getRoom()
-    }, [slug])
+    }, [slug])  
 
     useEffect(() => {
         if (status !== "authenticated" || !session?.user?.id) {
@@ -156,18 +157,33 @@ export default function Page() {
         if (slug) getMessages()
     }, [slug, socketRef])
 
+    function randomColor(userId: string) {
+        let hash = 0
+        for (let index = 0; index < userId.length; index++) {
+            hash = userId.charCodeAt(index) + ((hash << 5) - hash);
+        }
+
+        const hue = Math.abs(hash) % 360;
+
+        return `hsl(${hue}, 65%, 50%)`;
+    }
+
     return (
         <div className="flex h-full min-h-0 flex-col">
             <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/[0.06] px-4 sm:px-6">
                 <div className="flex min-w-0 items-center gap-3">
                     <Hash size={23} className="shrink-0 text-slate-500" />
                     <div className="min-w-0">
-                        <h2 className="truncate text-[17px] font-semibold">{slug}</h2>
+                        <h2 className="truncate text-[17px] font-semibold">{decodeURIComponent(slug)}</h2>
                         <div className="flex items-center gap-2">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            <span className="text-xs text-slate-500">
-                                {currentRoom ? "Room is active" : "Room"}
-                            </span>
+                            {roomId !== null && (
+                                <>
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                    <span className="text-xs text-slate-500">
+                                        Room is active
+                                    </span>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -189,6 +205,7 @@ export default function Page() {
                     </button>
                     <button type="button" className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/[0.05] hover:text-white">
                         <MoreHorizontal size={18} />
+                        <Chat3dot/>
                     </button>
                 </div>
             </header>
@@ -198,7 +215,7 @@ export default function Page() {
                     <div className="space-y-5">
                         {messages.map((item) => (
                             <div key={item.id} className="group flex items-start gap-3">
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-600 text-sm font-semibold shadow-lg">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center  rounded-full  text-sm font-semibold shadow-lg" style={{ backgroundColor: randomColor(item.userId) }}>
                                     {item.admin.name.slice(0, 1).toUpperCase()}
                                 </div>
                                 <div className="min-w-0">

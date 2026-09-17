@@ -94,7 +94,7 @@ export function AppSidebar() {
               {rooms.map((room) => (
                 <SidebarMenuItem key={room.id}>
                   <SidebarMenuButton>
-                    <a href={`/room/${room.slug}`}>{room.slug}</a>
+                    <a href={`/room/${encodeURIComponent(room.slug)}`}>{room.slug}</a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
