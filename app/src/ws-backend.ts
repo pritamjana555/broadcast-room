@@ -1,11 +1,12 @@
 import { createServer } from "node:http";
 import WebSocket, { WebSocketServer } from "ws";
-import { getToken } from "next-auth/jwt";
+import { getToken,decode } from "next-auth/jwt";
 import type { IncomingMessage } from "node:http";
 import type { Socket } from "node:net";
 import "dotenv/config"
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
+import crypto from "node:crypto";
 
 
 const server = createServer();
@@ -26,6 +27,14 @@ interface User {
   userId: string
 }
 
+interface SocketMessage {
+  type?: string
+  roomId?: number | string
+  room?: number | string
+  message?: unknown
+  clientId?: unknown
+}
+
 const users: User[] = []
 
 if (!nextAuthSecret) {
@@ -33,20 +42,50 @@ if (!nextAuthSecret) {
 }
 
 server.on("upgrade", async (request: IncomingMessage, socket: Socket, head) => {
-  const customBearerHeader = request.headers.bearer;
+  function getCookieValue(cookieHeader: string, name: string): string | undefined {
+  return cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${name}=`))
+    ?.slice(name.length + 1);
+}
+async function getSessionToken(request: IncomingMessage) {
+  const cookieHeader = request.headers.cookie;
+  if (!cookieHeader) return null;
 
-  if (!request.headers.authorization && typeof customBearerHeader === "string") {
-    request.headers.authorization = customBearerHeader.startsWith("Bearer ")
-      ? customBearerHeader
-      : `Bearer ${customBearerHeader}`;
+  const rawToken =
+    getCookieValue(cookieHeader, "next-auth.session-token") ??
+    getCookieValue(cookieHeader, "__Secure-next-auth.session-token");
+
+  if (!rawToken) return null;
+
+  try {
+    return await decode({ token: rawToken, secret: nextAuthSecret! });
+  } catch (error) {
+    console.error("Failed to decode session token:", error);
+    return null;
   }
+}
+  let token;
+try {
+  token = await getSessionToken(request);
+} catch (error) {
+  console.error("WebSocket authentication failed:", error);
+  socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+  socket.destroy();
+  return;
+}
 
-  const token = await getToken({
-    req: request as any,
-    secret: nextAuthSecret,
-  });
+if (!token) {
+  console.error("WebSocket authentication rejected: no valid session token");
+  socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+  socket.destroy();
+  return;
+}
+console.log("token:",token);
 
   if (!token) {
+    console.error("WebSocket authentication rejected: no NextAuth session cookie")
     socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
     socket.destroy();
     return;
@@ -63,22 +102,37 @@ server.on("upgrade", async (request: IncomingMessage, socket: Socket, head) => {
 });
 
 wss.on("connection", (ws) => {
+  ws.on("close", () => {
+    const index = users.findIndex((user) => user.ws === ws)
+    if (index !== -1) {
+      users.splice(index, 1)
+    }
+  })
+
+  ws.on("error", (error) => {
+    console.error("WebSocket error:", error)
+  })
+
   ws.on("message", async (data) => {
-    let parsedData: any
+    let parsedData: SocketMessage
     try {
       if (typeof data !== "string") {
-        parsedData = JSON.parse(data.toString())
+        parsedData = JSON.parse(data.toString()) as SocketMessage
       } else {
-        parsedData = JSON.parse(data)
+        parsedData = JSON.parse(data) as SocketMessage
       }
     } catch (error) {
-      console.log(parsedData);
-    console.error("Parsing error: ",error)
+      console.error("Parsing error:", error)
+      ws.send(JSON.stringify({ type: "error", message: "Invalid message format" }))
+      return
     }
     try {
       if (parsedData.type === "join-room") {
         const user = users.find(x => x.ws === ws)
-        user?.rooms.push(parsedData.roomId)
+        const roomId = String(parsedData.roomId)
+        if (user && !user.rooms.includes(roomId)) {
+          user.rooms.push(roomId)
+        }
       }
     } catch (error) {
       console.error("Cannot join room: ", error);
@@ -89,7 +143,7 @@ wss.on("connection", (ws) => {
       if (parsedData.type === "leave-room") {
         const user = users.find(x => x.ws === ws)
         if (!user) return
-        user.rooms = user.rooms.filter(x => x === parsedData.room)
+        user.rooms = user.rooms.filter(x => x !== String(parsedData.roomId))
       }
     } catch (error) {
       console.error("Cannot leave room: ", error);
@@ -99,35 +153,61 @@ wss.on("connection", (ws) => {
     try {
 
       if (parsedData.type === "chat") {
-        const roomId = parsedData.roomId
-        const message = parsedData.message
+        const roomId = Number(parsedData.roomId)
+        const message = typeof parsedData.message === "string" ? parsedData.message.trim() : ""
+        const clientId = typeof parsedData.clientId === "string" ? parsedData.clientId : undefined
         const user = users.find(x => x.ws === ws)
-        if (!user) return
+        if (!user || !Number.isInteger(roomId) || roomId <= 0 || !message) {
+          ws.send(JSON.stringify({ type: "error", message: "Invalid chat data" }))
+          return
+        }
 
-        await client.chat.create({
+        const savedMessage = await client.chat.create({
           data: {
             message,
             userId: user.userId,
-            roomId: Number(roomId)
-          }
+            roomId
+          },
+          select: {
+            id: true,
+            message: true,
+            userId: true,
+            admin: {
+              select: {
+                name: true,
+              },
+            },
+          },
         })
         users.forEach(user => {
-          if (user.rooms.includes(roomId)) {
+          if (user.rooms.includes(String(roomId))) {
             user.ws.send(JSON.stringify({
               type: "chat",
-              message: message,
-              roomId
+              clientId,
+              ...savedMessage,
             }))
           }
         });
       }
     } catch (error) {
       console.error("Cannot send message: ",error);
+      ws.send(JSON.stringify({ type: "error", message: "Message was not saved" }))
       
     }
+    
   });
 });
 
-server.listen(8080, () => {
-  console.log("WebSocket server running on port 8080");
+server.listen(8081, () => {
+
+
+const secret = process.env.NEXTAUTH_SECRET;
+
+console.log(
+    "Secret fingerprint: (webosocket)",
+    secret
+        ? crypto.createHash("sha256").update(secret).digest("hex").slice(0, 12)
+        : "MISSING"
+);
+  console.log("WebSocket server running on port 8081");
 });

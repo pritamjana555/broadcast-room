@@ -72,3 +72,14 @@ export const authOptions = {
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
+
+import crypto from "node:crypto";
+
+const secret = process.env.NEXTAUTH_SECRET;
+
+console.log(
+    "Secret fingerprint: (next.js)",
+    secret
+        ? crypto.createHash("sha256").update(secret).digest("hex").slice(0, 12)
+        : "MISSING"
+);

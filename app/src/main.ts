@@ -241,7 +241,16 @@ app.get("/users/:userId/rooms", async (req, res) => {
     try {
         const allrooms = await client.room.findMany({
             where: {
-                adminId: userId,
+                OR:[
+                    { adminId: userId },
+                    {
+                        members: {
+                            some: {
+                                id : userId,
+                            }
+                        }
+                    }
+                ]
             },
             select: {
                 id: true,
@@ -264,16 +273,27 @@ app.get("/users/:userId/rooms", async (req, res) => {
     }
 })
 
-app.get("/chats/:roomId", async (req, res) => {
+app.get("/chats/:slug", async (req, res) => {
     try {
-        const roomId = Number(req.params.roomId);
-        console.log(req.params.roomId);
+        const slug = decodeURIComponent(req.params.slug)
         const messages = await client.chat.findMany({
             where: {
-                roomId: roomId
+                room: {
+                    slug,
+                }
+            },
+            select:{
+                id: true,
+                message: true,
+                userId: true,
+                admin: {
+                    select: {
+                        name: true
+                    }
+                }
             },
             orderBy: {
-                id: "desc"
+                id: "asc"
             },
             take: 1000
         });
