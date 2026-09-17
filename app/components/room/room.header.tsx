@@ -1,14 +1,27 @@
 import { Bell, MessageCircle, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function RoomHeader(){
   const router = useRouter()
+  const { data: session, status } = useSession()
+
+  function randomColor(userId: string) {
+        let hash = 0
+        for (let index = 0; index < userId.length; index++) {
+            hash = userId.charCodeAt(index) + ((hash << 5) - hash);
+        }
+
+        const hue = Math.abs(hash) % 360;
+
+        return `hsl(${hue}, 65%, 50%)`;
+    }
     return <header className="flex h-[72px] shrink-0 items-center border-b border-white/[0.06] bg-[#111720] px-4 sm:px-6">
 
           {/* Logo */}
 
           <div className="flex shrink-0 items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 shadow-[0_6px_20px_rgba(124,58,237,0.3)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br shadow-[0_6px_20px_rgba(124,58,237,0.3)]" style={{backgroundColor: randomColor(session?.user.id ?? "")}}>
               <MessageCircle
                 size={22}
                 strokeWidth={2.4}
@@ -56,9 +69,9 @@ export default function RoomHeader(){
 
             <button
               type="button"
-              className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-sm font-semibold"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br  text-sm font-semibold" style={{backgroundColor: randomColor(session?.user.id ?? "")}}
             >
-              B
+              {session?.user.name.charAt(0).toUpperCase()}
 
               <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-[#111720] bg-emerald-500" />
             </button>

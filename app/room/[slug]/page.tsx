@@ -21,6 +21,7 @@ type Room = {
     id: number;
     slug: string;
     shareCode: string;
+    adminId: string;
 };
 
 type Message = {
@@ -38,24 +39,16 @@ export default function Page() {
     const params = useParams<{ slug: string[] }>();
     const router = useRouter();
 
-    const slug = Array.isArray(params.slug)
-        ? params.slug.join("/")
-        : params.slug;
+    const slug = Array.isArray(params.slug) ? params.slug.join("/") : params.slug;
 
     const [rooms, setRooms] = useState<Room[]>([]);
     const [roomId, setRoomId] = useState<number | null>(null);
+    const [roomAdminId, setRoomAdminId] = useState<string | null>(null)
     const [roomCode, setRoomCode] = useState("")
     const [messages, setMessages] = useState<Message[]>([]);
-
     const [membersOpen, setMembersOpen] = useState(false);
-
-    // More menu
     const [moreOpen, setMoreOpen] = useState(false);
-
-    // Info popup
     const [infoOpen, setInfoOpen] = useState(false);
-
-    // Copied state
     const [copied, setCopied] = useState(false);
 
     const socketRef = useRef<WebSocket | null>(null);
@@ -67,6 +60,7 @@ export default function Page() {
         }>
     >([]);
 
+    const isAdmin = !!session?.user?.id && roomAdminId === session.user.id
     /*
      * ------------------------------------------------------------
      * GET ROOM
@@ -74,28 +68,30 @@ export default function Page() {
      */
 
     useEffect(() => {
-    if (!slug) return
+        if (!slug) return
 
-    async function getRoom() {
-        try {
-            const response = await axios.get<{
-                room: Room | null
-            }>(
-                `http://localhost:5000/room/${encodeURIComponent(slug)}`
-            )
+        async function getRoom() {
+            try {
+                const response = await axios.get<{
+                    room: Room | null
+                }>(
+                    `http://localhost:5000/room/${encodeURIComponent(slug)}`
+                )
 
-            setRoomId(response.data.room?.id ?? null)
-            setRoomCode(response.data.room?.shareCode ?? "")
-        } catch (error) {
-            console.error("Failed to fetch room", error)
+                setRoomId(response.data.room?.id ?? null)
+                setRoomCode(response.data.room?.shareCode ?? "")
+                setRoomAdminId(response.data.room?.adminId ?? null)
+            } catch (error) {
+                console.error("Failed to fetch room", error)
 
-            setRoomId(null)
-            setRoomCode("")
+                setRoomId(null)
+                setRoomCode("")
+                setRoomAdminId(null)
+            }
         }
-    }
 
-    getRoom()
-}, [slug]);
+        getRoom()
+    }, [slug]);
 
     /*
      * ------------------------------------------------------------
@@ -192,7 +188,7 @@ export default function Page() {
                             (message) =>
                                 message.clientId &&
                                 message.clientId ===
-                                    incomingMessage.clientId
+                                incomingMessage.clientId
                         );
 
                     if (optimisticIndex === -1) {
@@ -323,11 +319,24 @@ export default function Page() {
      * ------------------------------------------------------------
      */
 
-    function leaveRoom() {
+
+    async function leaveRoom() {
+        try {
+            const response = await axios.delete("http://localhost:5000/leaveroom", {
+                data: {
+                    shareCode: roomCode,
+                    userId: session?.user?.id
+                }
+            })
+
+        } catch (error) {
+            console.log(error);
+        }
+
         if (
             roomId &&
             socketRef.current?.readyState ===
-                WebSocket.OPEN
+            WebSocket.OPEN
         ) {
             socketRef.current.send(
                 JSON.stringify({
@@ -341,27 +350,33 @@ export default function Page() {
         router.push("/room");
     }
 
-    /*
-     * ------------------------------------------------------------
-     * COPY ROOM CODE
-     * ------------------------------------------------------------
-     */
+   async function deleteRoom() {
+    try {
+        const response = await axios.delete("http://localhost:5000/deleteroom", {
+            data: {
+                roomId, userId: roomAdminId
+            }
+        })
+    } catch (error) {
+        console.log(error);
+    }
+   }
 
     async function copyRoomCode() {
-    if (!roomCode) return
+        if (!roomCode) return
 
-    try {
-        await navigator.clipboard.writeText(roomCode)
+        try {
+            await navigator.clipboard.writeText(roomCode)
 
-        setCopied(true)
+            setCopied(true)
 
-        setTimeout(() => {
-            setCopied(false)
-        }, 1500)
-    } catch (error) {
-        console.error("Failed to copy room code:", error)
+            setTimeout(() => {
+                setCopied(false)
+            }, 1500)
+        } catch (error) {
+            console.error("Failed to copy room code:", error)
+        }
     }
-}
 
     return (
         <div className="relative flex h-full min-h-0 flex-col overflow-hidden">
@@ -411,11 +426,10 @@ export default function Page() {
                                 !membersOpen
                             )
                         }
-                        className={`flex h-9 items-center gap-2 rounded-lg px-3 text-sm transition ${
-                            membersOpen
-                                ? "bg-violet-500/10 text-violet-300"
-                                : "text-slate-400 hover:bg-white/[0.05] hover:text-white"
-                        }`}
+                        className={`flex h-9 items-center gap-2 rounded-lg px-3 text-sm transition cursor-pointer ${membersOpen
+                            ? "bg-violet-500/10 text-violet-300"
+                            : "text-slate-400 hover:bg-white/[0.05] hover:text-white"
+                            }`}
                     >
                         <Users size={17} />
 
@@ -434,11 +448,10 @@ export default function Page() {
                             setInfoOpen(!infoOpen);
                             setMoreOpen(false);
                         }}
-                        className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${
-                            infoOpen
-                                ? "bg-violet-500/10 text-violet-300"
-                                : "text-slate-400 hover:bg-white/[0.05] hover:text-white"
-                        }`}
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${infoOpen
+                            ? "bg-violet-500/10 text-violet-300"
+                            : "text-slate-400 hover:bg-white/[0.05] hover:text-white cursor-pointer"
+                            }`}
                         aria-label="Room information"
                     >
                         <Info size={18} />
@@ -454,11 +467,10 @@ export default function Page() {
                             setMoreOpen(!moreOpen);
                             setInfoOpen(false);
                         }}
-                        className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${
-                            moreOpen
-                                ? "bg-white/[0.08] text-white"
-                                : "text-slate-400 hover:bg-white/[0.05] hover:text-white"
-                        }`}
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${moreOpen
+                            ? "bg-white/[0.08] text-white"
+                            : "text-slate-400 hover:bg-white/[0.05] hover:text-white cursor-pointer"
+                            }`}
                         aria-label="More options"
                     >
                         <MoreHorizontal size={18} />
@@ -487,9 +499,22 @@ export default function Page() {
                             </button>
 
                             {/* Leave room */}
+                            {isAdmin ? 
                             <button
                                 type="button"
-                                onClick={leaveRoom}
+                                onClick={() => deleteRoom()}
+                                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
+                            >
+                                <LogOut size={17} />
+
+                                <span>
+                                    Delete room
+                                </span>
+                            </button>
+                            : 
+                            <button
+                                type="button"
+                                onClick={() => leaveRoom()}
                                 className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
                             >
                                 <LogOut size={17} />
@@ -498,6 +523,8 @@ export default function Page() {
                                     Leave room
                                 </span>
                             </button>
+                            }
+                            
                         </div>
                     )}
 
@@ -548,7 +575,7 @@ export default function Page() {
                                         onClick={
                                             copyRoomCode
                                         }
-                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-slate-400 transition hover:bg-white/[0.08] hover:text-white"
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-slate-400 transition hover:bg-white/[0.08] hover:text-white cursor-pointer"
                                         title="Copy room code"
                                     >
                                         {copied ? (
@@ -646,20 +673,20 @@ export default function Page() {
                         crypto.randomUUID();
 
                     const optimisticMessage: Message =
-                        {
-                            id: Date.now(),
-                            clientId,
-                            message,
-                            userId:
-                                session?.user?.id ??
-                                "",
-                            admin: {
-                                name:
-                                    session?.user
-                                        ?.name ??
-                                    "You",
-                            },
-                        };
+                    {
+                        id: Date.now(),
+                        clientId,
+                        message,
+                        userId:
+                            session?.user?.id ??
+                            "",
+                        admin: {
+                            name:
+                                session?.user
+                                    ?.name ??
+                                "You",
+                        },
+                    };
 
                     setMessages((current) => [
                         ...current,

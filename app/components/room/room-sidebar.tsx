@@ -1,6 +1,6 @@
 'use client'
 import axios from "axios";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -71,7 +71,7 @@ export default function RoomSidebar() {
                     <button
                         type="button"
                         title="Join room"
-                        className="flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-white transition hover:bg-violet-500" onClick={() => setIsJoinRoomOpen(true)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-white transition cursor-pointer" onClick={() => setIsJoinRoomOpen(true)}
                     >
                         <Plus size={17} />
                     </button>
@@ -203,10 +203,10 @@ export default function RoomSidebar() {
                         <button
                             type="button"
                             onClick={() => setIsCreateRoomOpen(false)}
-                            className="text-slate-400 hover:text-white"
+                            className="text-slate-400 hover:text-white cursor-pointer"
                             aria-label="Close create room dialog"
                         >
-                            ×
+                            <X/>
                         </button>
                     </div>
 

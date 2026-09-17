@@ -190,8 +190,6 @@ app.post("/joinroom", async (req, res) => {
         })
     }
     try {
-        
-    
     const room = await client.room.findFirst({
         where: {
             shareCode
@@ -225,6 +223,82 @@ app.post("/joinroom", async (req, res) => {
 
         return res.status(500).json({
             message: "Could not join room",
+        })
+    }
+})
+
+app.delete("/leaveroom", async (req, res) => {
+    const userId = req.body.userId
+    const shareCode = req.body.shareCode
+
+    if (!userId || !shareCode) {
+        return res.status(400).json({
+            message: "Details not provided"
+        })
+    }
+
+    try {
+        const room = await client.room.findFirst({
+            where: { shareCode }
+        })
+
+        if (!room) {
+            return res.status(404).json({
+                message: "Room not found"
+            })
+        }
+
+        await client.room.update({
+            where: { id: room.id },
+            data: {
+                members: {
+                    disconnect: { id: userId }
+                }
+            }
+        })
+
+        return res.status(200).json({
+            message: "Left room successfully"
+        })
+    } catch (error) {
+        console.error("Failed to leave room:", error)
+        return res.status(500).json({
+            message: "Something went wrong"
+        })
+    }
+})
+
+app.delete("/deleteroom", async (req, res) => {
+    const id = req.body.roomId
+    const userId = req.body.userId
+
+    try {
+        const room = await client.room.findFirst({
+            where: { id }
+        })
+
+        if(!room){
+            return res.status(501).json({
+                message: "Room not found"
+            })
+        }
+
+        if (room.adminId !== userId) {
+            return res.status(403).json({
+                message: "Only the room admin can delete this room"
+            })
+        }
+
+        await client.room.delete({
+            where: { id }
+        })
+     return res.status(200).json({
+            message: "Room deleted successfully"
+        })
+    } catch (error) {
+        console.error("Failed to delete room:", error)
+        return res.status(500).json({
+            message: "Something went wrong"
         })
     }
 })
