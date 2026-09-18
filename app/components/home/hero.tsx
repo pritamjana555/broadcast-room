@@ -9,16 +9,18 @@ import {
 
 import { HeroScene } from "./hero-scene";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 
 export function Hero() {
-  async function joinRoom(){
+  async function joinRoom() {
     await axios.post("")
   }
+  const { data: session, status } = useSession()
   return (
     <section className="hero-section">
       <div className="hero-background" />
 
-      
+
 
       <HeroScene />
 
@@ -58,8 +60,8 @@ export function Hero() {
         </div>
 
         <div className="hero-actions">
-          <Link
-            href="#rooms"
+          {status === "authenticated" ? <Link
+            href={"/room"}
             className="primary-action"
             onClick={() => joinRoom()}
           >
@@ -67,7 +69,27 @@ export function Hero() {
 
             <ArrowRight size={17} />
           </Link>
+            :
+            <Link
+              href="#rooms"
+              className="primary-action"
+              onClick={() => joinRoom()}
+            >
+              Join room by code
 
+              <ArrowRight size={17} />
+            </Link>
+          }
+          {status === "authenticated" ?
+          <Link
+            href="/room"
+            className="secondary-action"
+          >
+            <Plus size={17} />
+
+            Create a room
+          </Link>
+          :
           <Link
             href="/signup"
             className="secondary-action"
@@ -76,6 +98,7 @@ export function Hero() {
 
             Create a room
           </Link>
+}
         </div>
       </div>
 

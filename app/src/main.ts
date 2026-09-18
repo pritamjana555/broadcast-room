@@ -31,6 +31,58 @@ const client = new PrismaClient({
     adapter,
 })
 
+app.post("/api/auth/google-signin", async (req, res) => {
+    const email = req.body.email
+    const name = req.body.name
+    const googleId = req.body.googleId;
+
+    if (!email || !name) {
+        return res.status(401).json({
+            "message": "User details not provided"
+        })
+    }
+    try {
+        let user = await client.user.findFirst({
+            where: {
+                email
+            }
+        })
+
+        if (!user) {
+            await client.user.create({
+                data: {
+                    name,
+                    email,
+                    googleId,
+                }
+            })
+        } else if (!user.googleId) {
+            user = await client.user.update({
+                where: {
+                    id: user.id
+                }, data: {
+                    googleId
+                }
+            })
+        }
+        return res.status(200).json({
+            message: "Success",
+            user: {
+                id: user?.id,
+                name: user?.name,
+                email: user?.email,
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "Something went wrong"
+        });
+    }
+
+})
+
 app.post("/api/auth/signup", async (req, res) => {
     const body = req.body ?? {}
     const email = typeof body.email === "string" ? body.email.trim() : ""
@@ -190,33 +242,33 @@ app.post("/joinroom", async (req, res) => {
         })
     }
     try {
-    const room = await client.room.findFirst({
-        where: {
-            shareCode
-        }
-    })
-    if(!room) return res.status(401).json({
-        message: "Room not found."
-    })
-
-    const updatedRoom = await client.room.update({
-        where: {id: room.id},
-        data: {
-            members: {
-                connect: { id: userId}
+        const room = await client.room.findFirst({
+            where: {
+                shareCode
             }
-        },
-        select: {
-            id: true,
-            slug: true,
-            shareCode: true,
-        }
-    })
+        })
+        if (!room) return res.status(401).json({
+            message: "Room not found."
+        })
 
-    return res.status(200).json({
-        message: "Joined room successfully",
-        room: updatedRoom,
-    })
+        const updatedRoom = await client.room.update({
+            where: { id: room.id },
+            data: {
+                members: {
+                    connect: { id: userId }
+                }
+            },
+            select: {
+                id: true,
+                slug: true,
+                shareCode: true,
+            }
+        })
+
+        return res.status(200).json({
+            message: "Joined room successfully",
+            room: updatedRoom,
+        })
 
     } catch (error) {
         console.error("Join room failed:", error)
@@ -277,7 +329,7 @@ app.delete("/deleteroom", async (req, res) => {
             where: { id }
         })
 
-        if(!room){
+        if (!room) {
             return res.status(501).json({
                 message: "Room not found"
             })
@@ -292,7 +344,7 @@ app.delete("/deleteroom", async (req, res) => {
         await client.room.delete({
             where: { id }
         })
-     return res.status(200).json({
+        return res.status(200).json({
             message: "Room deleted successfully"
         })
     } catch (error) {
@@ -315,12 +367,12 @@ app.get("/users/:userId/rooms", async (req, res) => {
     try {
         const allrooms = await client.room.findMany({
             where: {
-                OR:[
+                OR: [
                     { adminId: userId },
                     {
                         members: {
                             some: {
-                                id : userId,
+                                id: userId,
                             }
                         }
                     }
@@ -356,7 +408,7 @@ app.get("/chats/:slug", async (req, res) => {
                     slug,
                 }
             },
-            select:{
+            select: {
                 id: true,
                 message: true,
                 userId: true,
@@ -375,13 +427,13 @@ app.get("/chats/:slug", async (req, res) => {
         res.json({
             messages
         })
-    } catch(e) {
+    } catch (e) {
         console.log(e);
         res.json({
             messages: []
         })
     }
-    
+
 })
 
 app.get("/room/:slug", async (req, res) => {

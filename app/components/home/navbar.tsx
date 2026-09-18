@@ -49,7 +49,7 @@ export function HomeNavbar() {
             Log in
           </Link> :<button
                       type="button"
-                      className="auth-secondary-button"
+                      className="auth-logout-button"
                       onClick={() => signOut()}
                     >
                       Log out
