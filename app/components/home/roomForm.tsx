@@ -28,7 +28,7 @@ export default function RoomForm({ onCloseAction, onCreatedAction }: RoomFormPro
             try {
                 setLoading(true);
 
-                const res = await axios.post<{ roomId: number }>("http://localhost:5000/createroom", {
+                const res = await axios.post<{ roomId: number }>(`${process.env.NEXT_PUBLIC_API_URL}/createroom`, {
                     slug: roomSlug,
                     adminId: userId,
                 })

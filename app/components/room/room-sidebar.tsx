@@ -78,7 +78,7 @@ export default function RoomSidebar() {
         async function getRooms() {
             try {
                 const res = await axios.get<{ allrooms: Room[] }>(
-                    `http://localhost:5000/users/${userId}/rooms`
+                    `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/rooms`
                 );
 
                 setRooms(res.data.allrooms ?? []);

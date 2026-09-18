@@ -22,7 +22,7 @@ export const authOptions = {
                 },
             },
             async authorize(credentials) {
-                const res = await fetch("http://localhost:5000/api/auth/signin", {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signin`, {
                     method: "POST",
                     body: JSON.stringify({
                         identifier: credentials?.identifier,
@@ -52,7 +52,7 @@ export const authOptions = {
         async signIn({ user, account }) {
             if (account?.provider === "google") {
                 try {
-                    const res = await fetch("http://localhost:5000/api/auth/google-signin", {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/google-signin`, {
                         method: "POST",
                         body: JSON.stringify({
                             email: user.email,

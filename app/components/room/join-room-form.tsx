@@ -46,7 +46,7 @@ export default function JoinRoomForm({
           slug: string;
           shareCode: string;
         };
-      }>("http://localhost:5000/joinroom", {
+      }>(`${process.env.NEXT_PUBLIC_API_URL}/joinroom`, {
         shareCode: trimmedShareCode,
         userId: session.user.id,
       });

@@ -75,7 +75,7 @@ export default function Page() {
                 const response = await axios.get<{
                     room: Room | null
                 }>(
-                    `http://localhost:5000/room/${encodeURIComponent(slug)}`
+                    `${process.env.NEXT_PUBLIC_API_URL}/room/${encodeURIComponent(slug)}`
                 )
 
                 setRoomId(response.data.room?.id ?? null)
@@ -114,7 +114,7 @@ export default function Page() {
                 const res = await axios.get<{
                     allrooms: Room[];
                 }>(
-                    `http://localhost:5000/users/${userId}/rooms`
+                    `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/rooms`
                 );
 
                 setRooms(res.data.allrooms ?? []);
@@ -139,7 +139,7 @@ export default function Page() {
         if (!roomId) return;
 
         const socket = new WebSocket(
-            "ws://localhost:8081"
+            `${process.env.NEXT_PUBLIC_WS_URL}`
         );
 
         socketRef.current = socket;
@@ -257,7 +257,7 @@ export default function Page() {
                 const response = await axios.get<{
                     messages: Message[];
                 }>(
-                    `http://localhost:5000/chats/${encodeURIComponent(
+                    `${process.env.NEXT_PUBLIC_API_URL}/chats/${encodeURIComponent(
                         slug
                     )}`
                 );
@@ -322,7 +322,7 @@ export default function Page() {
 
     async function leaveRoom() {
         try {
-            const response = await axios.delete("http://localhost:5000/leaveroom", {
+            const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/leaveroom`, {
                 data: {
                     shareCode: roomCode,
                     userId: session?.user?.id
@@ -352,7 +352,7 @@ export default function Page() {
 
    async function deleteRoom() {
     try {
-        const response = await axios.delete("http://localhost:5000/deleteroom", {
+        const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/deleteroom`, {
             data: {
                 roomId, userId: roomAdminId
             }
