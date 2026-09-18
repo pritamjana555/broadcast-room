@@ -6,6 +6,7 @@ import "dotenv/config"
 import cors from 'cors'
 
 const app = express()
+const PORT = Number(process.env.PORT) || 5000
 
 const databaseUrl = process.env.DATABASE_URL
     ?.trim()
@@ -456,9 +457,9 @@ app.get("/room/:slug", async (req, res) => {
     })
 })
 
-const server = app.listen(5000, () => {
-    console.log("Server is running in 5000");
-})
+const server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`HTTP server running on port ${PORT}`);
+});
 
 server.on("error", (error) => {
     console.error("Backend server failed:", error)
