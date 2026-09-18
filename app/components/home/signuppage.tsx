@@ -4,34 +4,37 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
-export default function SignupPage(){
-      const router = useRouter();
-      const [email, setEmail] = useState("");
-      const [name, setname] = useState("");
-      const [password, setPassword] = useState("");
-      const [error, setError] = useState("");
+export default function SignupPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [name, setname] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-      async function handleSignup(event: FormEvent<HTMLFormElement>){
-        event.preventDefault()
-        setError("")
+  async function handleSignup(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError("")
 
-        try{
-            const res = await axios.post("http://localhost:5000/api/auth/signup", {
-                email,
-                name,
-                password
-            })
-            if(res.status){
-            router.push("/api/auth/signin")
-            } else{
-                console.log('signup error');
-                
-            }
-        }catch(error: string){
-            setError( error.response?.data?.message || "Something went wrong" );
-        }
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/signup", {
+        email,
+        name,
+        password
+      })
+      if (res.status) {
+        router.push("/api/auth/signin")
+      } else {
+        console.log('signup error');
+
       }
-    return  <form onSubmit={handleSignup}>
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message ?? "Something went wrong");
+      } else {
+        setError("Something went wrong");
+      }
+    }
+    return <form onSubmit={handleSignup}>
       <input
         type="text"
         placeholder="Email"
@@ -56,7 +59,8 @@ export default function SignupPage(){
       />
 
       <button type="submit">Signup</button>
-<h6>Already have an account? <Link href={'/api/auth/signin'} className="text-blue-400 underline italic">Login</Link></h6>
+      <h6>Already have an account? <Link href={'/api/auth/signin'} className="text-blue-400 underline italic">Login</Link></h6>
       {error && <p>{error}</p>}
     </form>
+  }
 }

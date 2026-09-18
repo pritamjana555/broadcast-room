@@ -36,7 +36,7 @@ export default function RoomForm({ onCloseAction, onCreatedAction }: RoomFormPro
                 setSlug("")
                 onCloseAction()
                 router.push(`/room/${encodeURIComponent(roomSlug)}`)
-            } catch (error) {
+            } catch (error: unknown) {
                 if (axios.isAxiosError(error)) {
                     console.error("Failed to create room", error.response?.data?.message ?? error.message)
                 } else {

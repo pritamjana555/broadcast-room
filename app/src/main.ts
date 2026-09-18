@@ -156,6 +156,12 @@ app.post("/api/auth/signin", async (req, res) => {
             });
         }
 
+        if (!user.password) {
+            return res.status(401).json({
+                message: "Invalid name or password",
+            });
+        }
+
         const correctPassword = await bcrypt.compare(
             password,
             user.password
