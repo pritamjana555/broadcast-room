@@ -6,14 +6,16 @@ import type { Socket } from "node:net";
 import "dotenv/config"
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
-import crypto from "node:crypto";
 
 
 const PORT = process.env.RENDER
   ? Number(process.env.PORT)
   : Number(process.env.PORT1) || 8081;
 
-const server = createServer();
+const server = createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end("ws server ok");
+});
 const wss = new WebSocketServer({ noServer: true });
 const nextAuthSecret = process.env.NEXTAUTH_SECRET;
 
@@ -45,19 +47,23 @@ if (!nextAuthSecret) {
   throw new Error("NEXTAUTH_SECRET must be set before starting the WebSocket server");
 }
 
-server.on("upgrade", async (request: IncomingMessage, socket: Socket, head) => {
-  function getCookieValue(cookieHeader: string, name: string): string | undefined {
+function getCookieValue(cookieHeader: string, name: string): string | undefined {
   return cookieHeader
     .split(";")
     .map((part) => part.trim())
     .find((part) => part.startsWith(`${name}=`))
     ?.slice(name.length + 1);
 }
+
 async function getSessionToken(request: IncomingMessage) {
-  const cookieHeader = request.headers.cookie;
-  if (!cookieHeader) return null;
+  // 1. token from the URL (?token=...), 2. cookie as a fallback
+  const url = new URL(request.url ?? "/", "http://localhost");
+  const urlToken = url.searchParams.get("token");
+
+  const cookieHeader = request.headers.cookie ?? "";
 
   const rawToken =
+    urlToken ??
     getCookieValue(cookieHeader, "next-auth.session-token") ??
     getCookieValue(cookieHeader, "__Secure-next-auth.session-token");
 
@@ -70,25 +76,12 @@ async function getSessionToken(request: IncomingMessage) {
     return null;
   }
 }
-  let token;
-try {
-  token = await getSessionToken(request);
-} catch (error) {
-  console.error("WebSocket authentication failed:", error);
-  socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
-  socket.destroy();
-  return;
-}
 
-if (!token) {
-  console.error("WebSocket authentication rejected: no valid session token");
-  socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
-  socket.destroy();
-  return;
-}
+server.on("upgrade", async (request: IncomingMessage, socket: Socket, head) => {
+  const token = await getSessionToken(request);
 
-  if (!token) {
-    console.error("WebSocket authentication rejected: no NextAuth session cookie")
+  if (!token || !token.userId) {
+    console.error("WebSocket authentication rejected: no valid session token");
     socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
     socket.destroy();
     return;
@@ -98,8 +91,8 @@ if (!token) {
     users.push({
       ws,
       rooms: [],
-      userId: token.userId!,
-    })
+      userId: token.userId as string,
+    });
     wss.emit("connection", ws, request);
   });
 });

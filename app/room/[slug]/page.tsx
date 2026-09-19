@@ -136,16 +136,36 @@ export default function Page() {
      */
 
     useEffect(() => {
-        if (!roomId) return;
+        if (!roomId || status !== "authenticated") return;
 
-        const socket = new WebSocket(
-            `${process.env.NEXT_PUBLIC_WS_URL}`
+        let cancelled = false;
+        let socket: WebSocket | null = null;
+
+        async function connect() {
+            let token: string;
+
+            try {
+                const res = await axios.get<{ token: string }>("/api/ws-token");
+                token = res.data.token;
+            } catch (error) {
+                console.error("Failed to get WebSocket token", error);
+                return;
+            }
+
+            if(cancelled) return
+
+             socket = new WebSocket(
+            `${process.env.NEXT_PUBLIC_WS_URL}?token=${encodeURIComponent(token)}`
         );
+
+        
+
+
 
         socketRef.current = socket;
 
         socket.onopen = () => {
-            socket.send(
+            socket!.send(
                 JSON.stringify({
                     type: "join-room",
                     roomId,
@@ -154,7 +174,7 @@ export default function Page() {
 
             queuedMessagesRef.current.forEach(
                 (queuedMessage) => {
-                    socket.send(
+                    socket!.send(
                         JSON.stringify({
                             type: "chat",
                             roomId,
@@ -226,24 +246,22 @@ export default function Page() {
                 socketRef.current = null;
             }
         };
+    }
+    connect()
+       return () => {
+        cancelled = true;
 
-        return () => {
-            if (
-                socket.readyState ===
-                WebSocket.OPEN
-            ) {
-                socket.send(
-                    JSON.stringify({
-                        type: "leave-room",
-                        roomId,
-                    })
-                );
+        if (socket) {
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: "leave-room", roomId }));
             }
 
             socket.close();
-            socketRef.current = null;
-        };
-    }, [roomId]);
+        }
+
+        socketRef.current = null;
+    };
+}, [roomId, status]);
 
     /*
      * ------------------------------------------------------------
@@ -350,17 +368,17 @@ export default function Page() {
         router.push("/room");
     }
 
-   async function deleteRoom() {
-    try {
-        const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/deleteroom`, {
-            data: {
-                roomId, userId: roomAdminId
-            }
-        })
-    } catch (error) {
-        console.log(error);
+    async function deleteRoom() {
+        try {
+            const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/deleteroom`, {
+                data: {
+                    roomId, userId: roomAdminId
+                }
+            })
+        } catch (error) {
+            console.log(error);
+        }
     }
-   }
 
     async function copyRoomCode() {
         if (!roomCode) return
@@ -499,32 +517,32 @@ export default function Page() {
                             </button>
 
                             {/* Leave room */}
-                            {isAdmin ? 
-                            <button
-                                type="button"
-                                onClick={() => deleteRoom()}
-                                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
-                            >
-                                <LogOut size={17} />
+                            {isAdmin ?
+                                <button
+                                    type="button"
+                                    onClick={() => deleteRoom()}
+                                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
+                                >
+                                    <LogOut size={17} />
 
-                                <span>
-                                    Delete room
-                                </span>
-                            </button>
-                            : 
-                            <button
-                                type="button"
-                                onClick={() => leaveRoom()}
-                                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
-                            >
-                                <LogOut size={17} />
+                                    <span>
+                                        Delete room
+                                    </span>
+                                </button>
+                                :
+                                <button
+                                    type="button"
+                                    onClick={() => leaveRoom()}
+                                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
+                                >
+                                    <LogOut size={17} />
 
-                                <span>
-                                    Leave room
-                                </span>
-                            </button>
+                                    <span>
+                                        Leave room
+                                    </span>
+                                </button>
                             }
-                            
+
                         </div>
                     )}
 
