@@ -33,7 +33,7 @@ export default function MessageInput({
   };
 
   return (
-    <section>
+    <section className="shrink-0">
       <div className="shrink-0 border-t border-white/[0.05] bg-[#10161f] p-3 sm:p-4">
 
               <div className="mx-auto flex max-w-[850px] items-center gap-2 rounded-xl border border-white/[0.07] bg-[#191f2a] px-2 py-2">
@@ -53,7 +53,7 @@ export default function MessageInput({
                   }
                   onKeyDown={handleKeyDown}
                   placeholder={`Message #${roomSlug.replaceAll("%20","")}`}
-                  className="min-w-0 flex-1 bg-transparent px-2 text-sm text-white outline-none placeholder:text-slate-500"
+                  className="min-w-0 flex-1 bg-transparent px-2 text-base sm:text-sm text-white outline-none placeholder:text-slate-500"
                 />
 
                 <button

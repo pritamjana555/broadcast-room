@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 import {
   Geist,
@@ -24,6 +24,12 @@ export const metadata: Metadata = {
   title: "Chatroom — Find your next conversation",
   description:
     "Discover rooms, meet people, and start talking in real time.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({

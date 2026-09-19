@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -161,7 +161,7 @@
   --home-ink: #11142a;
   --home-muted: #555a70;
   --home-soft: #ffffff;
-  min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
   background: #f6f3fb;
   color: var(--home-ink);
@@ -2717,7 +2717,7 @@ body {
 /* The homepage owns the overall canvas. */
 .home-page {
   position: relative;
-  min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: clip;
   overflow-y: visible;
   background: #f7f5fb;
@@ -2956,7 +2956,7 @@ body {
   display: grid;
   grid-template-columns: 60% 40%;
   width: 100%;
-  min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
   background: #eeeafd;
 }
@@ -2967,7 +2967,7 @@ body {
 
 .auth-visual {
   position: relative;
-  min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
 
   background:
@@ -3503,7 +3503,7 @@ body {
   align-items: center;
   justify-content: center;
 
-  min-height: 100vh;
+  min-height: 100dvh;
 
   padding: 50px 7%;
 
@@ -4046,7 +4046,7 @@ body {
 @media (max-width: 760px) {
   .auth-page {
     display: block;
-    min-height: 100vh;
+    min-height: 100dvh;
 
     background: #faf9fd;
   }
@@ -4133,7 +4133,7 @@ body {
   }
 
   .auth-panel {
-    min-height: calc(100vh - 285px);
+    min-height: calc(100dvh - 285px);
 
     padding: 42px 25px 50px;
 
@@ -4164,7 +4164,7 @@ body {
   }
 
   .auth-panel {
-    min-height: calc(100vh - 245px);
+    min-height: calc(100dvh - 245px);
 
     padding: 35px 20px 45px;
   }

@@ -402,7 +402,7 @@ export default function Page() {
             {/* CHAT HEADER */}
             {/* ================================================== */}
 
-            <header className="relative z-30 flex h-16 shrink-0 items-center justify-between border-b border-white/[0.06] px-4 sm:px-6">
+            <header className="relative z-30 flex h-16 shrink-0 items-center justify-between border-b border-white/[0.06] px-3 sm:px-6">
                 {/* Room title */}
                 <div className="flex min-w-0 items-center gap-3">
                     <Hash
@@ -422,7 +422,7 @@ export default function Page() {
                                 <>
                                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
 
-                                    <span className="text-xs text-slate-500">
+                                    <span className="text-xs text-slate-500 whitespace-nowrap">
                                         Room is active
                                     </span>
                                 </>
@@ -629,7 +629,7 @@ export default function Page() {
             {/* ================================================== */}
 
             <div className="min-h-0 flex-1 overflow-y-auto">
-                <div className="mx-auto w-full max-w-[850px] px-4 py-6 sm:px-6">
+                <div className="mx-auto w-full max-w-[850px] px-3 py-6 sm:px-6">
                     <div className="space-y-5">
                         {messages.map((item) => (
                             <div
