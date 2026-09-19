@@ -19,7 +19,7 @@ if (!databaseUrl || !/^postgres(?:ql)?:\/\//.test(databaseUrl)) {
 
 app.use(cors({
     origin: ["http://localhost:3000",
-        "https://broadcast-room.vercel.app/"
+        "https://broadcast-room.vercel.app"
     ],
     credentials: true
 }))
