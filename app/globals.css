@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-jakarta);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -628,6 +628,12 @@
 
 .hero-search input::placeholder {
   color: #888ca0;
+}
+
+.search-shortcut,
+.step-number,
+.hero-feature span {
+  font-family: var(--font-mono);
 }
 
 .search-shortcut {
@@ -2710,7 +2716,7 @@ body {
 
 body {
   background: #f7f5fb;
-  overflow-x: hidden;
+  overflow-x: clip;
   overflow-y: auto;
 }
 
@@ -3783,13 +3789,7 @@ body {
    DIVIDER
    ========================================================= */
 
-.auth-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
 
-  margin: 26px 0 20px;
-}
 
 .auth-divider span {
   flex: 1;
@@ -3921,7 +3921,7 @@ body {
   /* padding-top: 2px;
   padding-bottom: 2px; */
   padding-left: 5px;
-  padding-right: 5  px;
+  padding-right: 5px;
   border: 1px solid #e1dde7;
   border-radius: 12px;
 
@@ -4210,11 +4210,8 @@ body {
 
 html,
 body {
-  width: 100%;
-  height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
 }
 /* Chatroom scrollbars */
 
@@ -4299,20 +4296,219 @@ body {
 .auth-divider {
   display: flex;
   align-items: center;
-  text-align: center;
-  margin: 20px 0;
-  color: #98a2b3;
-  font-size: 13px;
+  gap: 12px;
+  margin: 22px 0 18px;
+  color: #a19cab;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .auth-divider::before,
 .auth-divider::after {
   content: "";
   flex: 1;
-  border-bottom: 1px solid #e4e7ec;
+  height: 1px;
+  background: #e7e3eb;
+}
+
+.auth-divider span {
+  flex: none;
+  white-space: nowrap;
 }
 
 .auth-divider span {
   padding: 0 12px;
   white-space: nowrap;
+}
+
+html {
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;                /* Chrome, Edge, Safari */
+}
+
+.cute-scrollbar {
+  position: fixed;
+  top: 10px;
+  bottom: 10px;
+  right: 3px;
+  width: 12px;
+  z-index: 9999;
+  pointer-events: none;         /* never blocks clicks on the page */
+
+  opacity: 0;
+  transform: translateX(8px);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cute-scrollbar.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.cute-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  width: 6px;
+  min-height: 44px;
+  border-radius: 999px;
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+
+  background: linear-gradient(180deg, #b79dff 0%, #e58bd0 55%, #ff9f9a 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 4px 12px rgba(120, 90, 180, 0.25);
+
+  transition: width 0.2s ease, right 0.2s ease, filter 0.2s ease;
+}
+
+.cute-scrollbar-thumb:hover,
+.cute-scrollbar-thumb.dragging {
+  width: 9px;
+  right: 1px;
+  filter: saturate(1.15) brightness(0.97);
+}
+
+.cute-scrollbar-thumb.dragging {
+  cursor: grabbing;
+}
+
+@media (max-width: 760px), (pointer: coarse) {
+  .cute-scrollbar {
+    display: none;              /* touch devices have their own overlay bars */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cute-scrollbar,
+  .cute-scrollbar-thumb {
+    transition: none;
+  }
+}
+
+/* =========================================================
+   AUTH — COMPACT MOBILE LAYOUT
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .auth-page {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;            /* the page scrolls itself */
+    overscroll-behavior: contain;
+    background: #faf9fd;
+  }
+
+  /* Slim brand bar instead of the big visual */
+  .auth-visual {
+    flex: 0 0 auto;
+    height: 60px;
+    min-height: 60px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+  }
+
+  .auth-scene,
+  .auth-visual-content,
+  .auth-visual-footer {
+    display: none;
+  }
+
+  .auth-brand {
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    font-size: 16px;
+  }
+
+  .auth-brand-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+  }
+
+  /* Form panel */
+  .auth-panel {
+    flex: 1 0 auto;
+    display: block;
+    min-height: 0;
+    padding: 22px 20px calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .auth-panel-inner {
+    max-width: none;
+  }
+
+  .auth-form-header {
+    margin-bottom: 18px;
+  }
+
+  .auth-form-eyebrow {
+    display: none;
+  }
+
+  .auth-form-header h2 {
+    font-size: 26px;
+    letter-spacing: -0.04em;
+  }
+
+  .auth-form-header p {
+    margin-top: 6px;
+    font-size: 13px;
+  }
+
+  .auth-google-btn {
+    height: 46px;
+    padding: 0 16px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+
+  .auth-divider {
+    margin: 16px 0 14px;
+  }
+
+  .auth-form {
+    gap: 14px;
+  }
+
+  .auth-field {
+    gap: 6px;
+  }
+
+  .auth-field label {
+    font-size: 12px;
+  }
+
+  .auth-field input {
+    height: 46px;
+    padding: 0 14px;
+    border-radius: 12px;
+    font-size: 16px;             /* below 16px, iOS Safari zooms on focus */
+  }
+
+  .auth-submit {
+    height: 48px;
+    margin-top: 4px;
+    border-radius: 12px;
+  }
+
+  .auth-terms {
+    margin: 14px auto 10px;
+  }
+
+  .auth-switch {
+    margin-top: 16px;
+  }
 }

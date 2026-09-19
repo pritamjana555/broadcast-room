@@ -42,7 +42,7 @@ export default function MessageInput({
                   type="button"
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/[0.06] hover:text-white"
                 >
-                  <Plus size={18} />
+                  {/* <Plus size={18} /> */}
                 </button>
 
                 <input
@@ -55,13 +55,6 @@ export default function MessageInput({
                   placeholder={`Message #${roomSlug.replaceAll("%20","")}`}
                   className="min-w-0 flex-1 bg-transparent px-2 text-base sm:text-sm text-white outline-none placeholder:text-slate-500"
                 />
-
-                <button
-                  type="button"
-                  className="hidden h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:text-white sm:flex"
-                >
-                  <Smile size={18} />
-                </button>
 
                 <button
                   type="button"

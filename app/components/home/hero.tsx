@@ -102,43 +102,6 @@ export function Hero() {
         </div>
       </div>
 
-      <div className="hero-feature-row">
-        <div className="hero-feature">
-          <span>01</span>
-
-          <strong>
-            Open conversations
-          </strong>
-
-          <small>
-            Real people, real topics
-          </small>
-        </div>
-
-        <div className="hero-feature">
-          <span>02</span>
-
-          <strong>
-            Easy to join
-          </strong>
-
-          <small>
-            Find a room in seconds
-          </small>
-        </div>
-
-        <div className="hero-feature">
-          <span>03</span>
-
-          <strong>
-            Infinite topics
-          </strong>
-
-          <small>
-            From hobbies to big ideas
-          </small>
-        </div>
-      </div>
 
       <a
         className="scroll-cue"

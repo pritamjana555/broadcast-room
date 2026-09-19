@@ -56,7 +56,6 @@ function getCookieValue(cookieHeader: string, name: string): string | undefined 
 }
 
 async function getSessionToken(request: IncomingMessage) {
-  // 1. token from the URL (?token=...), 2. cookie as a fallback
   const url = new URL(request.url ?? "/", "http://localhost");
   const urlToken = url.searchParams.get("token");
 

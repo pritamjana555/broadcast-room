@@ -97,7 +97,7 @@ export default function RoomSidebar() {
     return (
         <aside
             className={`flex shrink-0 flex-col border-r border-white/[0.06] bg-[#10161f] transition-all duration-200 ${sidebarCollapsed
-                    ? "w-[72px]"
+                    ? "w-[60px] md:w-[72px]"
                     : "absolute inset-y-0 left-0 z-40 w-[250px] shadow-2xl lg:relative lg:z-auto"
                 }`}
         >

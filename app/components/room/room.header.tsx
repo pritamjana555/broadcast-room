@@ -16,7 +16,7 @@ export default function RoomHeader(){
 
         return `hsl(${hue}, 65%, 50%)`;
     }
-    return <header className="flex h-[72px] shrink-0 items-center border-b border-white/[0.06] bg-[#111720] px-4 sm:px-6">
+    return <header className="flex h-[60px] sm:h-[72px]  shrink-0 items-center border-b border-white/[0.06] bg-[#111720] px-4 sm:px-6">
 
           {/* Logo */}
 
@@ -24,7 +24,7 @@ export default function RoomHeader(){
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br shadow-[0_6px_20px_rgba(124,58,237,0.3)]" style={{backgroundColor: randomColor(session?.user.id ?? "")}}>
               <MessageCircle
                 size={22}
-                strokeWidth={2.4}
+                strokeWidth={2.4} onClick={() => router.push('/')}
               />
             </div>
 

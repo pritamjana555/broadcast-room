@@ -10,16 +10,8 @@ import { HomeNavbar } from "./components/home/navbar";
 export default function Home() {
   return (
     <main className="home-page">
-      {/* ================= NAVBAR ================= */}
       <HomeNavbar />
-
-      {/* ================= HERO ================= */}
       <Hero />
-
-      {/* ==========================================
-          EVERYTHING BELOW HERO
-          USES ONE CONTINUOUS BACKGROUND
-          ========================================== */}
       <div className="post-hero">
         <ConversationMarquee />
 
