@@ -9,9 +9,7 @@ import { PrismaClient } from "@/generated/prisma/client";
 import crypto from "node:crypto";
 
 
-const PORT = Number(process.env.PORT1)
-  || (process.env.RENDER === "true" ? Number(process.env.PORT) : 0)
-  || 8081
+const PORT = Number(process.env.PORT1) || 8081
 const server = createServer();
 const wss = new WebSocketServer({ noServer: true });
 const nextAuthSecret = process.env.NEXTAUTH_SECRET;
