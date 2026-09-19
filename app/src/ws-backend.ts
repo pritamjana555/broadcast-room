@@ -9,7 +9,9 @@ import { PrismaClient } from "@/generated/prisma/client";
 import crypto from "node:crypto";
 
 
-const PORT1 = Number(process.env.PORT1) || 8081
+const PORT = Number(process.env.PORT1)
+  || (process.env.RENDER === "true" ? Number(process.env.PORT) : 0)
+  || 8081
 const server = createServer();
 const wss = new WebSocketServer({ noServer: true });
 const nextAuthSecret = process.env.NEXTAUTH_SECRET;
@@ -198,6 +200,6 @@ wss.on("connection", (ws) => {
   });
 });
 
-server.listen(PORT1, "0.0.0.0", () => {
-  console.log(`WebSocket server running on port ${PORT1}`);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`WebSocket server running on port ${PORT}`);
 });
